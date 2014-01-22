@@ -1,0 +1,13 @@
+language: java
+jdk:
+  - oraclejdk7
+
+env:
+  global:
+    # PASSWORD=pwd
+    secure: "PnBD4RIMcnnUWpThez2zc2cb+P/tiHFPmQPP71eVzIMsAtE374iFoJTgPu9ZE/eaOabkZgt3oZl92g46TuymTOggyjl3WWrdXHS5zUuQoHa3t1ujw5I8L3I8TE3ikoyFijQuxynJrOIyxSN2gti78+rDisb1EydePMWtdkx3ofg="
+
+after_success:
+  - chmod +x deploy.sh
+  - ./deploy.sh
+
