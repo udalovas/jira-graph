@@ -1,33 +1,31 @@
 package net.wonderbeat
 
-import com.atlassian.jira.rest.client.domain.BasicProject
-import com.atlassian.util.concurrent.Effect
-import com.atlassian.jira.rest.client.auth.AnonymousAuthenticationHandler
-import java.net.URI
-import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory
-import org.joda.time.DateTime
 import reactor.core.composable.Stream
-import reactor.core.Environment
-import reactor.core.composable.spec.Streams
+import com.atlassian.jira.rest.client.IssueRestClient
+import com.atlassian.jira.rest.client.domain.Issue
+import com.atlassian.jira.rest.client.SearchRestClient
+import reactor.core.composable.Deferred
 
-trait Jiraph<T> {
+trait Jiraph<T, K> {
 
-    fun start(source: T): Stream<JiraAction>
+    fun start(source: T): Stream<K>
 }
 
-public class JiraJiraph(val env: Environment): Jiraph<String> {
+public class JiraJiraph(val deferred: Deferred<Issue, Stream<Issue>>,
+                        val searchClient: SearchRestClient,
+                        val issueClient: IssueRestClient): Jiraph<String, Issue> {
 
-    override fun start(source: String): Stream<JiraAction> {
-        val deferr = Streams.defer<JiraAction>()!!.env(env)!!.get()
-        val factory = AsynchronousJiraRestClientFactory()
-        val client = factory.create(URI(source), AnonymousAuthenticationHandler())
-        client!!.getProjectClient()!!.getAllProjects()!!.done( Effect<Iterable<BasicProject>> {
-            it!!.forEach {
-                print((DateTime().getMillis() * 10000).toString() + "|wonderbeat|A|" + it.getName() + "\n")
-
+    /**
+     * Accepts project name as source
+     */
+    override fun start(source: String): Stream<Issue> {
+        searchClient.searchJql("project = " + source)!!.done {
+            it!!.getIssues()!!.forEach {
+                issueClient.getIssue(it.getKey())!!.done {
+                    deferred.accept(it)
+                }
             }
-        } )
-
-        return deferr!!.compose()!!
+        }
+        return deferred.compose()!!
     }
 }

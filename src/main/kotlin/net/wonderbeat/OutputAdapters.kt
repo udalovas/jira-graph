@@ -16,15 +16,16 @@ import reactor.core.composable.Composable
 import reactor.function.Consumer
 import reactor.event.Event
 import java.io.FileWriter
+import net.wonderbeat.nodes.TimelineNode
 
 
-fun<T> Jiraph<T>.withFileAdapter(fileName: String) {
+fun Jiraph<TimelineNode, TimelineNode>.withFileAdapter(fileName: String) {
     val self = this
-    object: Jiraph<T> {
-        override fun start(source: T): Stream<JiraAction> {
+    object: Jiraph<TimelineNode, TimelineNode> {
+        override fun start(source: TimelineNode): Stream<TimelineNode> {
             val out = self.start(source)
             val file = FileWriter(fileName)
-            out.consume(Consumer<JiraAction> {
+            out.consume(Consumer<TimelineNode> {
                 file.write("event")
             })
             return out
@@ -32,12 +33,12 @@ fun<T> Jiraph<T>.withFileAdapter(fileName: String) {
     }
 }
 
-fun<T> Jiraph<T>.withStdOutAdapter() {
+fun Jiraph<TimelineNode, TimelineNode>.withStdOutAdapter() {
     val self = this
-    object: Jiraph<T> {
-        override fun start(source: T): Stream<JiraAction> {
+    object: Jiraph<TimelineNode, TimelineNode> {
+        override fun start(source: TimelineNode): Stream<TimelineNode> {
             val out = self.start(source)
-            out.consume(Consumer<JiraAction> {
+            out.consume(Consumer<TimelineNode> {
                 println(it)
             })
             return out
