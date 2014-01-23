@@ -1,23 +1,24 @@
 package net.wonderbeat
 
-import java.io.InputStream
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream
 import com.atlassian.jira.rest.client.domain.BasicProject
 import com.atlassian.util.concurrent.Effect
 import com.atlassian.jira.rest.client.auth.AnonymousAuthenticationHandler
 import java.net.URI
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory
 import org.joda.time.DateTime
+import reactor.core.composable.Stream
+import reactor.core.Environment
+import reactor.core.composable.spec.Streams
 
 trait JiraGource<T> {
 
-    fun start(source: T): InputStream
+    fun start(source: T): Stream<JiraAction>
 }
 
-public class WebJiraGource: JiraGource<String> {
+public class WebJiraGource(val env: Environment): JiraGource<String> {
 
-    override fun start(source: String): InputStream {
-        val out = ByteInputStream()
+    override fun start(source: String): Stream<JiraAction> {
+        val deferr = Streams.defer<JiraAction>()!!.env(env)!!.get()
         val factory = AsynchronousJiraRestClientFactory()
         val client = factory.create(URI(source), AnonymousAuthenticationHandler())
         client!!.getProjectClient()!!.getAllProjects()!!.done( Effect<Iterable<BasicProject>> {
@@ -27,6 +28,6 @@ public class WebJiraGource: JiraGource<String> {
             }
         } )
 
-        return out
+        return deferr!!.compose()!!
     }
 }

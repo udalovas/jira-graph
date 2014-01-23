@@ -11,14 +11,35 @@ import java.nio.file.Path
 import java.nio.file.FileSystems
 import java.nio.file.OpenOption
 import java.nio.file.Paths
+import reactor.core.composable.Stream
+import reactor.core.composable.Composable
+import reactor.function.Consumer
+import reactor.event.Event
+import java.io.FileWriter
 
 
 fun<T> JiraGource<T>.withFileAdapter(fileName: String) {
     val self = this
     object: JiraGource<T> {
-        override fun start(source: T): InputStream {
-            val destination = FileOutputStream(fileName).getChannel();
+        override fun start(source: T): Stream<JiraAction> {
             val out = self.start(source)
+            val file = FileWriter(fileName)
+            out.consume(Consumer<JiraAction> {
+                file.write("event")
+            })
+            return out
+        }
+    }
+}
+
+fun<T> JiraGource<T>.withStdOutAdapter() {
+    val self = this
+    object: JiraGource<T> {
+        override fun start(source: T): Stream<JiraAction> {
+            val out = self.start(source)
+            out.consume(Consumer<JiraAction> {
+                println(it)
+            })
             return out
         }
     }
