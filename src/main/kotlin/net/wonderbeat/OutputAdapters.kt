@@ -18,9 +18,9 @@ import reactor.event.Event
 import java.io.FileWriter
 
 
-fun<T> JiraGource<T>.withFileAdapter(fileName: String) {
+fun<T> Jiraph<T>.withFileAdapter(fileName: String) {
     val self = this
-    object: JiraGource<T> {
+    object: Jiraph<T> {
         override fun start(source: T): Stream<JiraAction> {
             val out = self.start(source)
             val file = FileWriter(fileName)
@@ -32,9 +32,9 @@ fun<T> JiraGource<T>.withFileAdapter(fileName: String) {
     }
 }
 
-fun<T> JiraGource<T>.withStdOutAdapter() {
+fun<T> Jiraph<T>.withStdOutAdapter() {
     val self = this
-    object: JiraGource<T> {
+    object: Jiraph<T> {
         override fun start(source: T): Stream<JiraAction> {
             val out = self.start(source)
             out.consume(Consumer<JiraAction> {

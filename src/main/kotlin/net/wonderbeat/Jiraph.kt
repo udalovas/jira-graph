@@ -10,12 +10,12 @@ import reactor.core.composable.Stream
 import reactor.core.Environment
 import reactor.core.composable.spec.Streams
 
-trait JiraGource<T> {
+trait Jiraph<T> {
 
     fun start(source: T): Stream<JiraAction>
 }
 
-public class WebJiraGource(val env: Environment): JiraGource<String> {
+public class JiraJiraph(val env: Environment): Jiraph<String> {
 
     override fun start(source: String): Stream<JiraAction> {
         val deferr = Streams.defer<JiraAction>()!!.env(env)!!.get()
